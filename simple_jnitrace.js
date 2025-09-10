@@ -262,60 +262,60 @@ function hookLibart() {
         ) {
             // 查找 GetStringUTFChars 函数
             if (symbol.name.indexOf("GetStringUTFChars") >= 0) {
-                addrGetStringUTFChars = symbol.address;
+                getStringUTFCharsAddr = symbol.address;
                 // 查找 NewStringUTF 函数
             } else if (symbol.name.indexOf("NewStringUTF") >= 0) {
-                addrNewStringUTF = symbol.address;
+                newStringUTFAddr = symbol.address;
                 // 查找 NewString 函数
             } else if (symbol.name.indexOf("NewString") >= 0 && symbol.name.indexOf("NewStringUTF") < 0) {
-                addrNewString = symbol.address;
+                newStringAddr = symbol.address;
                 // 查找 FindClass 函数
             } else if (symbol.name.indexOf("FindClass") >= 0) {
-                addrFindClass = symbol.address;
+                findClassAddr = symbol.address;
                 // console.log("FindClass is at ", symbol.address, symbol.name);
                 // 查找 GetMethodID 函数
             } else if (symbol.name.indexOf("GetMethodID") >= 0) {
-                addrGetMethodID = symbol.address;
+                getMethodIDAddr = symbol.address;
                 // console.log("GetMethodID is at ", symbol.address, symbol.name);
                 // 查找 GetStaticMethodID 函数
             } else if (symbol.name.indexOf("GetStaticMethodID") >= 0) {
-                addrGetStaticMethodID = symbol.address;
+                getStaticMethodIDAddr = symbol.address;
                 // console.log("GetStaticMethodID is at ", symbol.address, symbol.name);
                 // 查找 GetFieldID 函数
             } else if (symbol.name.indexOf("GetFieldID") >= 0) {
-                addrGetFieldID = symbol.address;
+                getFieldIDAddr = symbol.address;
                 // console.log("GetFieldID is at ", symbol.address, symbol.name);
                 // 查找 GetStaticFieldID 函数
             } else if (symbol.name.indexOf("GetStaticFieldID") >= 0) {
-                addrGetStaticFieldID = symbol.address;
+                getStaticFieldIDAddr = symbol.address;
                 // console.log("GetStaticFieldID is at ", symbol.address, symbol.name);
                 // 查找 RegisterNatives 函数
             } else if (symbol.name.indexOf("RegisterNatives") >= 0) {
-                addrRegisterNatives = symbol.address;
+                registerNativesAddr = symbol.address;
                 // console.log("RegisterNatives is at ", symbol.address, symbol.name);
                 // 查找 CallObjectMethod 函数
             } else if (symbol.name.indexOf("CallObjectMethod") >= 0 && symbol.name.indexOf("art3JNI") >= 0 && symbol.name.indexOf("jmethodIDz") > 0) {
-                //addrCallObjectMethod = symbol.address;
+                //callObjectMethodAddr = symbol.address;
                 // console.log("CallObjectMethod is at ", symbol.address, symbol.name);
                 // 查找 CallStaticObjectMethod 函数
             } else if (symbol.name.indexOf("CallStaticObjectMethod") >= 0 && symbol.name.indexOf("art3") >= 0 && symbol.name.endsWith("jmethodIDz")) {
-                addrCallStaticObjectMethod = symbol.address;
+                callStaticObjectMethodAddr = symbol.address;
                 // console.log("CallStaticObjectMethod is at ", symbol.address, symbol.name);
                 // 查找 CallVoidMethod 函数
             } else if (symbol.name.indexOf("CallVoidMethod") >= 0 && symbol.name.indexOf("art3") >= 0 && symbol.name.endsWith("jmethodIDz")) {
-                addrCallVoidMethod = symbol.address;
+                callVoidMethodAddr = symbol.address;
                 // console.log("CallVoidMethod is at ", symbol.address, symbol.name);
                 // 查找 CallStaticIntMethod 函数
             } else if (symbol.name.indexOf("CallStaticIntMethod") >= 0 && symbol.name.indexOf("art3") >= 0 && symbol.name.endsWith("jmethodIDz")) {
-                addrCallStaticIntMethod = symbol.address;
+                callStaticIntMethodAddr = symbol.address;
                 // console.log("CallStaticIntMethod is at ", symbol.address, symbol.name);
             }
         }
     }
 
     // Hook CallStaticObjectMethod - 调用静态对象方法
-    if (addrCallStaticObjectMethod) {
-        Interceptor.attach(ptr(addrCallStaticObjectMethod), {
+    if (callStaticObjectMethodAddr) {
+        Interceptor.attach(ptr(callStaticObjectMethodAddr), {
             onEnter: function (args) {
                 var env = args[0];       // JNIEnv*
                 var jclass = args[1];     // Java 类
@@ -373,8 +373,8 @@ function hookLibart() {
     }
 
     // Hook CallVoidMethod - 调用void方法
-    if (addrCallVoidMethod) {
-        Interceptor.attach(ptr(addrCallVoidMethod), {
+    if (callVoidMethodAddr) {
+        Interceptor.attach(ptr(callVoidMethodAddr), {
             onEnter: function (args) {
                 var jniObj = args[1];
                 if (jniObj.isNull()) return;
@@ -410,8 +410,8 @@ function hookLibart() {
     }
 
     // Hook CallObjectMethod - 调用对象方法
-    if (addrCallObjectMethod != null) {
-        Interceptor.attach(addrCallObjectMethod, {
+    if (callObjectMethodAddr != null) {
+        Interceptor.attach(callObjectMethodAddr, {
             onEnter: function (args) {
                 // 获取调用的 Java 对象 (jobject)
                 this.jobject = args[1];
@@ -451,8 +451,8 @@ function hookLibart() {
         });
     }
     // Hook GetStringUTFChars - 获取UTF字符串
-    if (addrGetStringUTFChars != null) {
-        Interceptor.attach(addrGetStringUTFChars, {
+    if (getStringUTFCharsAddr != null) {
+        Interceptor.attach(getStringUTFCharsAddr, {
             onEnter: function (args) {},
             onLeave: function (retval) {
                 if (retval != null) {
@@ -593,8 +593,8 @@ function hookLibart() {
     });
 
     // Hook FindClass - 查找类
-    if (addrFindClass != null) {
-        Interceptor.attach(addrFindClass, {
+    if (findClassAddr != null) {
+        Interceptor.attach(findClassAddr, {
             onEnter: function (args) {
                 if (args[1] != null) {
                     var name = Memory.readCString(args[1]);
@@ -619,8 +619,8 @@ function hookLibart() {
         });
     }
     // Hook GetMethodID - 获取方法ID
-    if (addrGetMethodID != null) {
-        Interceptor.attach(ptr(addrGetMethodID), {
+    if (getMethodIDAddr != null) {
+        Interceptor.attach(ptr(getMethodIDAddr), {
             onEnter: function (args) {
                 this.env = args[0];         // JNIEnv
                 this.jclass = args[1];      // jclass
@@ -652,8 +652,8 @@ function hookLibart() {
     }
 
     // Hook GetStaticMethodID - 获取静态方法ID
-    if (addrGetStaticMethodID != null) {
-        Interceptor.attach(addrGetStaticMethodID, {
+    if (getStaticMethodIDAddr != null) {
+        Interceptor.attach(getStaticMethodIDAddr, {
             onEnter: function (args) {
                 if (args[2] != null) {
                     var jclass = args[1];
@@ -692,8 +692,8 @@ function hookLibart() {
         });
     }
     // Hook GetFieldID - 获取字段ID
-    if (addrGetFieldID != null) {
-        Interceptor.attach(addrGetFieldID, {
+    if (getFieldIDAddr != null) {
+        Interceptor.attach(getFieldIDAddr, {
             onEnter: function (args) {
                 if (args[2] != null) {
                     var jclass = args[1];
@@ -727,8 +727,8 @@ function hookLibart() {
         });
     }
     // Hook GetStaticFieldID - 获取静态字段ID
-    if (addrGetStaticFieldID != null) {
-        Interceptor.attach(addrGetStaticFieldID, {
+    if (getStaticFieldIDAddr != null) {
+        Interceptor.attach(getStaticFieldIDAddr, {
             onEnter: function (args) {
                 if (args[2] != null) {
                     var jclass = args[1];
@@ -762,8 +762,8 @@ function hookLibart() {
         });
     }
     // Hook RegisterNatives - 注册本地方法
-    if (addrRegisterNatives != null) {
-        Interceptor.attach(addrRegisterNatives, {
+    if (registerNativesAddr != null) {
+        Interceptor.attach(registerNativesAddr, {
             onEnter: function (args) {
                 var env = args[0];
                 var java_class = args[1];
@@ -824,8 +824,8 @@ function hookLibart() {
     }
 
     // Hook CallStaticIntMethod - 调用返回int的静态方法  
-    if (addrCallStaticIntMethod) {
-        Interceptor.attach(ptr(addrCallStaticIntMethod), {
+    if (callStaticIntMethodAddr) {
+        Interceptor.attach(ptr(callStaticIntMethodAddr), {
             onEnter: function (args) {
                 var env = args[0];       // JNIEnv*
                 var jclass = args[1];     // Java 类
